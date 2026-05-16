@@ -77,7 +77,7 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
   titleCanvas.height = 170;
   const titleCtx = titleCanvas.getContext('2d');
   titleCtx.fillStyle = 'rgba(255, 255, 255, 1.0)';
-  const titleText = '心の仮面';
+  const titleText = 'titleText';
   const maxTextWidth = titleCanvas.width * 0.9;
   let fontSize = 70;
   titleCtx.font = `bold ${fontSize}px "Yu Gothic", "Meiryo", sans-serif`;
@@ -99,8 +99,8 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
   // 本文塗り
   titleCtx.fillText(titleText, titleCanvas.width / 2, titleY);
 
-  // サブタイトル「ショートノベルゲーム」
-  const subtitleText = 'ショートノベルゲーム in GGJ 2026';
+  // サブタイトル
+  const subtitleText = 'subtitleText';
   let subFontSize = Math.max(16, Math.floor(fontSize * 0.34));
   titleCtx.font = `bold ${subFontSize}px "Yu Gothic", "Meiryo", sans-serif`;
   while (titleCtx.measureText(subtitleText).width > maxTextWidth && subFontSize > 12) {
