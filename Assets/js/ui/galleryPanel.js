@@ -9,6 +9,9 @@ const TABS_Y = 56;
 const TAB_W = 120;
 const TAB_H = 28;
 const TAB_GAP = 10;
+const TAB_COUNT = 3;
+const TABS_TOTAL_W = TAB_W * TAB_COUNT + TAB_GAP * (TAB_COUNT - 1);
+const TABS_START_X = (BASE_PANEL_WIDTH - TABS_TOTAL_W) / 2;
 
 const LEFT_COL_X = 28;
 const BUTTON_W = 96;
@@ -24,14 +27,27 @@ const CLOSE_H = 28;
 
 const BUTTON_RECTS_BASE = [
   { id: 'close', x: BASE_PANEL_WIDTH - CLOSE_W - 16, y: BASE_PANEL_HEIGHT - CLOSE_H - 16, w: CLOSE_W, h: CLOSE_H },
-  { id: 'tab_story', x: (BASE_PANEL_WIDTH - (TAB_W * 2 + TAB_GAP)) / 2, y: TABS_Y, w: TAB_W, h: TAB_H },
-  { id: 'tab_images', x: (BASE_PANEL_WIDTH - (TAB_W * 2 + TAB_GAP)) / 2 + TAB_W + TAB_GAP, y: TABS_Y, w: TAB_W, h: TAB_H },
+  { id: 'tab_story', x: TABS_START_X, y: TABS_Y, w: TAB_W, h: TAB_H },
+  { id: 'tab_images', x: TABS_START_X + TAB_W + TAB_GAP, y: TABS_Y, w: TAB_W, h: TAB_H },
+  { id: 'tab_bgm', x: TABS_START_X + 2 * (TAB_W + TAB_GAP), y: TABS_Y, w: TAB_W, h: TAB_H },
   { id: 'row_intro_btn', x: BUTTON_X, y: ROW_START_Y + 0 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
   { id: 'row_main_btn', x: BUTTON_X, y: ROW_START_Y + 1 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
   { id: 'row_end1_btn', x: BUTTON_X, y: ROW_START_Y + 2 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
   { id: 'row_end2_btn', x: BUTTON_X, y: ROW_START_Y + 3 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
   { id: 'row_end3_btn', x: BUTTON_X, y: ROW_START_Y + 4 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
+  { id: 'row_bgm1_btn', x: BUTTON_X, y: ROW_START_Y + 0 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
+  { id: 'row_bgm2_btn', x: BUTTON_X, y: ROW_START_Y + 1 * ROW_GAP - BUTTON_H / 2, w: BUTTON_W, h: BUTTON_H },
 ];
+
+const STORY_ROW_ACTIONS = new Set([
+  'row_intro_btn', 'row_main_btn', 'row_end1_btn', 'row_end2_btn', 'row_end3_btn',
+]);
+const BGM_ROW_ACTIONS = new Set(['row_bgm1_btn', 'row_bgm2_btn']);
+
+export const GALLERY_BGM_TRACKS = {
+  bgm1: { label: 'BGM1 RPG', src: 'Assets/sound/bgm/mukky_01_RPG.wav' },
+  bgm2: { label: 'BGM2 RPG', src: 'Assets/sound/bgm/mukky_02_RPG.wav' },
+};
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -95,6 +111,7 @@ function drawPanelTexture(state, panelWidth, panelHeight) {
   // Tabs
   drawButton(ctx, BUTTON_RECTS_BASE[1].x, BUTTON_RECTS_BASE[1].y, TAB_W, TAB_H, 'ストーリー', state.activeTab === 'story');
   drawButton(ctx, BUTTON_RECTS_BASE[2].x, BUTTON_RECTS_BASE[2].y, TAB_W, TAB_H, '画像', state.activeTab === 'images');
+  drawButton(ctx, BUTTON_RECTS_BASE[3].x, BUTTON_RECTS_BASE[3].y, TAB_W, TAB_H, 'BGM', state.activeTab === 'bgm');
 
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
   ctx.beginPath();
@@ -103,7 +120,6 @@ function drawPanelTexture(state, panelWidth, panelHeight) {
   ctx.stroke();
 
   if (state.activeTab === 'story') {
-    // Rows
     ctx.font = '14px "Yu Gothic", "Meiryo", sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
@@ -113,11 +129,25 @@ function drawPanelTexture(state, panelWidth, panelHeight) {
       ctx.fillStyle = '#a0a0a0';
       ctx.textAlign = 'right';
       ctx.fillText(label, ROLE_RIGHT_X, y);
-      // Go button
       drawButton(ctx, BUTTON_X, y - BUTTON_H / 2, BUTTON_W, BUTTON_H, 'go', false);
     });
+  } else if (state.activeTab === 'bgm') {
+    ctx.font = '14px "Yu Gothic", "Meiryo", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    const bgmRows = [
+      { id: 'bgm1', label: GALLERY_BGM_TRACKS.bgm1.label },
+      { id: 'bgm2', label: GALLERY_BGM_TRACKS.bgm2.label },
+    ];
+    bgmRows.forEach((row, i) => {
+      const y = ROW_START_Y + i * ROW_GAP;
+      const isPlaying = state.galleryBgmPlaying === row.id;
+      ctx.fillStyle = '#a0a0a0';
+      ctx.textAlign = 'right';
+      ctx.fillText(row.label, ROLE_RIGHT_X + 40, y);
+      drawButton(ctx, BUTTON_X, y - BUTTON_H / 2, BUTTON_W, BUTTON_H, isPlaying ? '停止' : '再生', isPlaying);
+    });
   } else {
-    // Images tab placeholder
     ctx.font = '14px "Yu Gothic", "Meiryo", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -133,8 +163,15 @@ function drawPanelTexture(state, panelWidth, panelHeight) {
   return texture;
 }
 
+function isActionAllowedForTab(action, activeTab) {
+  if (action === 'close' || action.startsWith('tab_')) return true;
+  if (activeTab === 'story' && STORY_ROW_ACTIONS.has(action)) return true;
+  if (activeTab === 'bgm' && BGM_ROW_ACTIONS.has(action)) return true;
+  return false;
+}
+
 export function createGalleryPanel3d() {
-  const state = { activeTab: 'story' };
+  const state = { activeTab: 'story', galleryBgmPlaying: null };
   let currentPanelWidth = BASE_PANEL_WIDTH;
   let currentPanelHeight = BASE_PANEL_HEIGHT;
 
@@ -164,6 +201,11 @@ export function createGalleryPanel3d() {
   function hide() { panelGroup.visible = false; }
   function toggle() { panelGroup.visible = !panelGroup.visible; }
   function setTab(tab) { state.activeTab = tab; redraw(); }
+  function getGalleryBgmPlaying() { return state.galleryBgmPlaying; }
+  function setGalleryBgmPlaying(trackId) {
+    state.galleryBgmPlaying = trackId;
+    redraw();
+  }
 
   function getActionAt(worldPoint) {
     const inv = new THREE.Matrix4().copy(mesh.matrixWorld).invert();
@@ -180,7 +222,11 @@ export function createGalleryPanel3d() {
       const rw = rect.w * scaleX;
       const rh = rect.h * scaleY;
       if (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh) {
-        return rect.id;
+        if (isActionAllowedForTab(rect.id, state.activeTab)) {
+          return rect.id;
+        }
+        // ストーリー行とBGM行は同座標のため、非アクティブタブの矩形はスキップする
+        continue;
       }
     }
     return null;
@@ -203,8 +249,8 @@ export function createGalleryPanel3d() {
     toggle,
     update,
     getActionAt,
-    setTab
+    setTab,
+    getGalleryBgmPlaying,
+    setGalleryBgmPlaying
   };
 }
-
-

@@ -78,6 +78,7 @@ function drawPanelTexture(panelWidth, panelHeight) {
   row('ストーリー', 'AI: ChatGPT');
   row('サウンド', '効果音ラボ');
   row('', 'ユーフルカ');
+  row('', 'ムッキー');
 
   // Close button
   drawButton(ctx, BASE_PANEL_WIDTH - CLOSE_W - 16, BASE_PANEL_HEIGHT - CLOSE_H - 16, CLOSE_W, CLOSE_H, '閉じる');

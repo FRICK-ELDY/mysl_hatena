@@ -5,7 +5,7 @@ import { createConfigButton3d } from '../ui/configButton3d.js';
 import { UiGlowParticles } from '../utility/uiGlowParticles.js';
 import { playHover, playClick, playBgm, stopBgm, isBgmPlaying } from '../utility/sound.js';
 import { createParallaxBackground } from '../utility/parallaxBackground.js';
-import { createGalleryPanel3d } from '../ui/galleryPanel.js';
+import { createGalleryPanel3d, GALLERY_BGM_TRACKS } from '../ui/galleryPanel.js';
 import { createCreditPanel3d } from '../ui/creditPanel.js';
 
 /**
@@ -271,6 +271,27 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
   const galleryPanel = createGalleryPanel3d();
   configButtonUiScene.add(galleryPanel.panelGroup);
   galleryPanel.update(initialSize.width, initialSize.height);
+
+  const TITLE_BGM_SRC = 'Assets/sound/bgm/main-theme01.mp3';
+
+  function restoreTitleBgmFromGallery() {
+    if (!galleryPanel.getGalleryBgmPlaying()) return;
+    galleryPanel.setGalleryBgmPlaying(null);
+    stopBgm();
+    playBgm(TITLE_BGM_SRC, { loop: true });
+  }
+
+  function toggleGalleryBgm(trackId) {
+    const current = galleryPanel.getGalleryBgmPlaying();
+    if (current === trackId) {
+      restoreTitleBgmFromGallery();
+      return;
+    }
+    const track = GALLERY_BGM_TRACKS[trackId];
+    if (!track) return;
+    playBgm(track.src, { loop: true });
+    galleryPanel.setGalleryBgmPlaying(trackId);
+  }
 
   // クレジットパネル
   const creditPanel = createCreditPanel3d();
@@ -626,6 +647,7 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
       if (panelHits.length > 0) {
         const action = galleryPanel.getActionAt(panelHits[0].point);
         if (action === 'close') {
+          restoreTitleBgmFromGallery();
           galleryPanel.hide();
           playClick();
           return;
@@ -637,27 +659,44 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
           galleryPanel.setTab('images');
           playClick();
           return;
+        } else if (action === 'tab_bgm') {
+          galleryPanel.setTab('bgm');
+          playClick();
+          return;
+        } else if (action === 'row_bgm1_btn') {
+          playClick();
+          toggleGalleryBgm('bgm1');
+          return;
+        } else if (action === 'row_bgm2_btn') {
+          playClick();
+          toggleGalleryBgm('bgm2');
+          return;
         } else if (action === 'row_intro_btn') {
+          restoreTitleBgmFromGallery();
           playClick();
           galleryPanel.hide();
           onSceneChange('intro');
           return;
         } else if (action === 'row_main_btn') {
+          restoreTitleBgmFromGallery();
           playClick();
           galleryPanel.hide();
           onSceneChange('game');
           return;
         } else if (action === 'row_end1_btn') {
+          restoreTitleBgmFromGallery();
           playClick();
           galleryPanel.hide();
           onSceneChange('end1');
           return;
         } else if (action === 'row_end2_btn') {
+          restoreTitleBgmFromGallery();
           playClick();
           galleryPanel.hide();
           onSceneChange('end2');
           return;
         } else if (action === 'row_end3_btn') {
+          restoreTitleBgmFromGallery();
           playClick();
           galleryPanel.hide();
           onSceneChange('end3');
@@ -666,6 +705,7 @@ export async function createTitleScene(canvas, container, onSceneChange, onConfi
         return;
       }
       // パネル外クリックで閉じる
+      restoreTitleBgmFromGallery();
       galleryPanel.hide();
       playClick();
       return;
